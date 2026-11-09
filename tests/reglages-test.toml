@@ -1,0 +1,46 @@
+# Réglages des tests : tous les modules actifs, aucune adresse réelle.
+[modules]
+hermes = true
+sport = true
+collabora = true
+drawio = true
+dictee = true
+notifications = true
+blocage_mailcow = true
+
+[ia]
+# Port 9 (discard) : refusé tout de suite, aucun test ne joint un vrai service.
+adresse = "http://127.0.0.1:9"
+service_systemd = "moteur-test"
+modele_defaut = "precis"
+
+[ia.modeles.precis]
+nom = "Précis"
+modele = "modele-precis"
+
+[ia.modeles.rapide]
+nom = "Rapide"
+modele = "modele-rapide"
+
+[blocage_mailcow]
+domaine = "exemple.fr"
+
+[serveur]
+services_critiques = ["ntfy"]
+
+[collabora]
+adresse_publique = "https://collabora.exemple.test"
+
+[drawio]
+adresse_publique = "https://drawio.exemple.test"
+
+[dictee]
+adresse = "http://127.0.0.1:9"
+
+[notifications]
+adresse = "http://127.0.0.1:9"
+jeton = "/nonexistent/ntfy-jeton"
+
+[hermes]
+# Jamais le vrai profil de la machine : Poste y règle la vision au démarrage.
+profil = "/nonexistent/poste-tests/profil-hermes"

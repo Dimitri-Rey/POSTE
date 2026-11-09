@@ -1,0 +1,34 @@
+// Sites intégrés : ajout dans Réglages, entrée de menu, page dans un cadre, retrait. node tests/sites.cjs [dossier-captures]
+const {spawn}=require('child_process'),fs=require('fs'),os=require('os'),path=require('path'),http=require('http');
+const {chromium,devices}=require(process.env.PLAYWRIGHT);
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'poste-si-'));const sortie=process.argv[2]||tmp;const U='http://127.0.0.1:8611';
+const site=http.createServer((q,r)=>{r.writeHead(200,{'content-type':'text/html; charset=utf-8'});r.end('<!doctype html><title>Wiki</title><h1 id="t">Wiki de démonstration</h1>')}).listen(8612);
+const srv=spawn('.venv/bin/uvicorn',['poste.app:creer','--factory','--port','8611','--app-dir','api'],{env:{...process.env,POSTE_CONFIG:path.resolve('tests/reglages-test.toml'),POSTE_CLE:tmp+'/cle',POSTE_BASE:tmp+'/t.db',POSTE_HOTES:'127.0.0.1:8611',POSTE_ORIGINES:U,POSTE_COOKIE_SECURE:'0',POSTE_TACHES_DE_FOND:'0',POSTE_JETON_AGENT:tmp+'/a'},stdio:'ignore'});
+const fin=(c)=>{srv.kill();site.close();process.exit(c)};
+(async()=>{for(let i=0;i<60;i++){if(await fetch(U+'/api/auth/etat').then(r=>r.ok).catch(()=>false))break;await new Promise(r=>setTimeout(r,250))}
+const b=await chromium.launch({executablePath:process.env.CHROME});const err=[];
+const pc=await b.newContext({viewport:{width:1360,height:860}});const p=await pc.newPage();p.on('pageerror',e=>err.push('js:'+e.message));
+p.on('console',m=>{if(m.type()==='error'&&/Content Security Policy/.test(m.text()))err.push('csp: '+m.text())});
+await p.goto(U);await p.fill('.seuil input','mot-de-passe-de-test');await p.click('.seuil button');await p.waitForSelector('nav');
+await p.goto(U+'/#reglages');await p.waitForSelector('h2:has-text("Sites intégrés")');
+await p.click('h2:has-text("Sites intégrés") button');await p.fill('dialog input[aria-label="Nom dans le menu"]','Wiki');
+await p.fill('dialog input[aria-label="Adresse"]',U);await p.click('dialog button:has-text("Ajouter")');
+await p.waitForSelector('dialog .br-message:has-text("Poste")');
+await p.fill('dialog input[aria-label="Adresse"]','http://127.0.0.1:8612/accueil');await p.click('dialog button:has-text("Ajouter")');
+await p.waitForSelector('.br-ligne:has-text("Wiki")');await p.screenshot({path:`${sortie}/sites-reglages.png`});
+await p.reload();await p.waitForSelector('nav a[aria-label="Wiki"]');
+const ordre=await p.$$eval('nav a[aria-label]',l=>l.map(a=>a.getAttribute('aria-label')));
+if(ordre.indexOf('Wiki')>ordre.indexOf('Serveur')||ordre.indexOf('Wiki')<ordre.indexOf('Fichiers'))err.push('ordre '+ordre);
+await p.click('nav a[aria-label="Wiki"]');await p.waitForSelector('.site-cadre');
+const cadre=p.frameLocator('.site-cadre');await cadre.locator('#t').waitFor({timeout:5000}).catch(()=>err.push('site non affiché'));
+if(!await p.locator('a:has-text("Ouvrir dans un onglet")[href="http://127.0.0.1:8612/accueil"]').count())err.push('lien onglet');
+await p.screenshot({path:`${sortie}/sites-pc.png`});
+const tel=await b.newContext({...devices['Pixel 7'],storageState:await pc.storageState()});const m=await tel.newPage();m.on('pageerror',e=>err.push('js tel:'+e.message));
+await m.goto(U+'/#accueil');await m.waitForSelector('.nav-plus');await m.click('.nav-plus');await m.click('.feuille a:has-text("Wiki")');
+await m.frameLocator('.site-cadre').locator('#t').waitFor({timeout:5000}).catch(()=>err.push('site non affiché (tel)'));
+const bas=await m.evaluate(()=>{const c=document.querySelector('.site-cadre').getBoundingClientRect(),n=document.querySelector('nav').getBoundingClientRect();return c.bottom<=n.top+1});
+if(!bas)err.push('cadre sous la barre');await m.screenshot({path:`${sortie}/sites-telephone.png`});
+await p.goto(U+'/#reglages');await p.waitForSelector('.br-ligne:has-text("Wiki")');p.once('dialog',d=>d.accept());
+await p.click('.br-ligne:has-text("Wiki") button:has-text("Retirer")');await p.waitForSelector('.br-vide:has-text("applications web")');
+await p.reload();await p.waitForSelector('nav');if(await p.locator('nav a[aria-label="Wiki"]').count())err.push('toujours au menu');
+await b.close();console.log(err.length?'ÉCHEC\n'+err.join('\n'):'OK sites');fin(err.length?1:0)})().catch(e=>{console.error(e);fin(1)});

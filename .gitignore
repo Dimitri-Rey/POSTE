@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+android/app/build/
+android/build/
+android/.gradle/
+*.apk
+*.keystore
+capacitor.config.json
+.env
+/config/
+.export-poste-public

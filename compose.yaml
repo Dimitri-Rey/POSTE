@@ -1,0 +1,48 @@
+# Poste avec Docker Compose (ou Podman Compose).
+#   cp .env.example .env    puis adapter
+#   docker compose up -d                        Poste seul
+#   docker compose --profile ntfy up -d         + notifications sur le téléphone
+#   docker compose --profile drawio up -d       + éditeur de diagrammes
+# Les boîtes mail, agendas, IA, dictée et notifications se branchent ensuite dans Réglages.
+services:
+  poste:
+    build: .
+    image: poste:local
+    restart: unless-stopped
+    ports:
+      - "${POSTE_PORT:-8541}:8541"
+    env_file: .env
+    # Podman sans root : l'utilisateur 1000 du conteneur devient le tien, et peut écrire dans ./config.
+    # userns_mode: keep-id
+    environment:
+      TZ: ${TZ:-Europe/Paris}
+    volumes:
+      - poste-donnees:/data
+      # « :z » : nécessaire avec SELinux (Fedora, RHEL), sans effet ailleurs.
+      - ./config:/config:z
+    # Pour joindre une IA ou une dictée qui tournent sur la machine hôte : http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ntfy:
+    profiles: ["ntfy"]
+    image: binwiederhier/ntfy:v2.31.0
+    command: serve
+    restart: unless-stopped
+    ports:
+      - "${NTFY_PORT:-8546}:80"
+    environment:
+      TZ: ${TZ:-Europe/Paris}
+    volumes:
+      - ntfy-cache:/var/cache/ntfy
+
+  drawio:
+    profiles: ["drawio"]
+    image: jgraph/drawio:32.6.10
+    restart: unless-stopped
+    ports:
+      - "${DRAWIO_PORT:-8543}:8080"
+
+volumes:
+  poste-donnees:
+  ntfy-cache:

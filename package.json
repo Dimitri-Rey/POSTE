@@ -1,0 +1,19 @@
+{
+  "name": "poste-android",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Enveloppe Android (Capacitor) de Poste",
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "@milkdown/kit": "^7.23.0",
+    "esbuild": "^0.28.2",
+    "pdfjs-dist": "^6.4.299"
+  },
+  "scripts": {
+    "build:web": "esbuild web-src/milkdown.js web-src/pdf.js --bundle --format=esm --minify --target=es2022 --outdir=web/lib && esbuild node_modules/pdfjs-dist/build/pdf.worker.mjs --minify --format=esm --outfile=web/lib/pdf.worker.js"
+  }
+}

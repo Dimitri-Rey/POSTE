@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Poste</string>
+    <string name="title_activity_main">Poste</string>
+    <string name="package_name">app.poste</string>
+    <string name="custom_url_scheme">app.poste</string>
+</resources>

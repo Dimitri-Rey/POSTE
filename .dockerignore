@@ -1,0 +1,12 @@
+.git
+.venv
+node_modules
+android
+ancien
+tests
+web-src
+deploiement
+**/__pycache__
+*.apk
+*.keystore
+.env

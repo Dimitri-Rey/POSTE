@@ -1,0 +1,5 @@
+{
+  "name": "Poste", "short_name": "Poste", "start_url": "/", "display": "standalone",
+  "background_color": "#14110d", "theme_color": "#14110d",
+  "icons": [{"src": "/icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]
+}

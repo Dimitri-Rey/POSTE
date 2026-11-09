@@ -1,0 +1,114 @@
+# Poste : modèle de réglages.
+# Copier dans ~/.config/poste/poste.toml (ou indiquer un autre chemin avec POSTE_CONFIG), puis adapter.
+# Tout est facultatif : sans fichier, Poste démarre avec Mails, Agenda, Tâches, Fichiers et Serveur.
+# Les variables d'environnement POSTE_* (voir api/poste/config.py) passent avant ce fichier.
+
+[serveur]
+# Adresse par laquelle on ouvre Poste (navigateur, application Android).
+adresse_publique = "https://poste.exemple.fr"
+# Noms d'hôte acceptés (avec le port) et origines autorisées pour les requêtes du navigateur.
+hotes = ["127.0.0.1:8541", "localhost:8541", "poste.exemple.fr"]
+origines = ["https://poste.exemple.fr"]
+# Services systemd dont l'arrêt déclenche une notification.
+services_critiques = []
+# Clé qui chiffre les mots de passe saisis dans l'interface (créée au premier démarrage).
+# cle_secrets = "~/.config/poste/cle-secrets"
+
+# Services systemd affichés dans la page Serveur : nom de l'unité = libellé.
+[serveur.services]
+# ollama = "Moteur IA"
+
+# Disques affichés dans la page Serveur : libellé = point de montage.
+[serveur.disques]
+"Système" = "/"
+
+# Modules facultatifs. Coupé, un module disparaît de l'interface et ses routes répondent 404.
+[modules]
+mails = true
+agenda = true
+taches = true
+fichiers = true
+serveur = true
+hermes = false          # assistant Hermes (agent externe, voir [hermes])
+dictee = false          # dictée vocale locale (voir [dictee])
+collabora = false       # édition Word, Excel, PowerPoint dans le navigateur (voir [collabora])
+drawio = false          # diagrammes (voir [drawio])
+notifications = false   # notifications sur le téléphone par ntfy (voir [notifications])
+sport = false           # activités Strava, lues par l'assistant
+blocage_mailcow = false # blocage d'expéditeurs sur un serveur Mailcow
+
+# Les boîtes mail, les agendas, l'IA, la dictée, les notifications et les modules se règlent aussi dans
+# l'interface (Réglages) : ce qui y est réglé passe avant ce fichier. Mots de passe et clés y sont chiffrés,
+# avec une clé rangée dans ~/.config/poste/cle-secrets (ou cle_secrets ci-dessous, ou POSTE_CLE).
+
+# Moteur d'IA compatible OpenAI (Ollama, LM Studio, vLLM, llama.cpp, LiteLLM, OpenAI…), pour les rédactions courtes.
+# La clé d'API, si besoin, se saisit dans Réglages.
+[ia]
+adresse = "http://127.0.0.1:11434"
+# modele = ""   # vide : le premier modèle proposé par le service
+# Bascule entre plusieurs modèles (facultatif) : service systemd du moteur et fichier qu'il lit au démarrage.
+# service_systemd = "mon-moteur"
+# Service qui remplace parfois le moteur (modèle plus léger) : tant qu'il tourne, Hermes ne dit pas « moteur arrêté ».
+# service_remplacant = ""
+# fichier_modele = "~/.config/containers/systemd/mon-moteur.container.d/modele.conf"
+# modele_defaut = "rapide"
+# [ia.modeles.rapide]
+# nom = "Rapide"
+# modele = "nom-du-modele"
+#
+# Un modèle qui voit les images (Hermes lui envoie la photo au lieu de son OCR). Il peut reprendre le même
+# dossier qu'un autre choix avec des variables passées au moteur, par exemple pour activer la vision :
+# [ia.modeles.vision]
+# nom = "Vision"
+# modele = "nom-du-modele"
+# vision = true
+# environnement = { VISION = "1" }
+
+[mails]
+# Les boîtes se branchent dans Réglages (Gmail, Outlook, iCloud, Infomaniak, OVHcloud, Fastmail, tout IMAP).
+# Domaines vers lesquels Poste ne prépare jamais de brouillon (facultatif).
+# domaines_interdits = ["exemple-concurrent.fr"]
+
+[dictee]
+# Service de transcription compatible OpenAI (/v1/audio/transcriptions) : Speaches, whisper.cpp, Parakeet…
+adresse = "http://127.0.0.1:8085"
+# modele = ""   # certains services demandent un nom de modèle
+
+[collabora]
+adresse_publique = "https://collabora.exemple.fr"
+adresse_interne = "http://127.0.0.1:9980"
+# Adresse par laquelle Collabora joint Poste (WOPI).
+adresse_wopi = "http://127.0.0.1:8541"
+
+[drawio]
+adresse_publique = "https://drawio.exemple.fr"
+
+# ntfy : un serveur à soi, ou https://ntfy.sh (sujet public : choisir un nom difficile à deviner).
+[notifications]
+adresse = "https://ntfy.sh"
+sujet = "poste"
+# Jeton d'accès : à saisir dans Réglages, ou fichier qui le contient.
+# jeton = "~/.config/poste/ntfy-jeton"
+# Adresse que le téléphone joint, si elle diffère.
+# adresse_publique = "https://ntfy.exemple.fr"
+
+[hermes]
+adresse = "http://127.0.0.1:8643"
+profil = "~/.hermes/profiles/poste"
+
+[blocage_mailcow]
+identifiants = "~/.config/poste/mailcow.env"
+domaine = "exemple.fr"
+
+[creations]
+# Outils de création de documents au format Open WebUI (facultatif).
+outils = "~/.config/poste/outils"
+service_pdf = ""
+
+# Application Android (deploiement/construire-apk.sh) : elle ouvre [serveur] adresse_publique, en HTTPS.
+[android]
+identifiant = "app.poste"
+
+# Ton prénom : l'IA s'adresse à toi et signe tes brouillons de réponse (se règle aussi dans Réglages).
+[profil]
+prenom = ""
